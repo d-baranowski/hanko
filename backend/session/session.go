@@ -7,6 +7,7 @@ import (
 	"github.com/teamhanko/hanko/backend/config"
 	hankoJwk "github.com/teamhanko/hanko/backend/crypto/jwk"
 	hankoJwt "github.com/teamhanko/hanko/backend/crypto/jwt"
+	"github.com/teamhanko/hanko/backend/persistence"
 	"net/http"
 	"time"
 )
@@ -25,6 +26,7 @@ type manager struct {
 	cookieConfig  cookieConfig
 	issuer        string
 	audience      []string
+	users         persistence.UserPersister
 }
 
 type cookieConfig struct {
@@ -36,7 +38,7 @@ type cookieConfig struct {
 }
 
 // NewManager returns a new Manager which will be used to create and verify sessions JWTs
-func NewManager(jwkManager hankoJwk.Manager, config config.Config) (Manager, error) {
+func NewManager(jwkManager hankoJwk.Manager, config config.Config, users persistence.UserPersister) (Manager, error) {
 	signatureKey, err := jwkManager.GetSigningKey()
 	if err != nil {
 		return nil, fmt.Errorf("failed to create session generator: %w", err)
@@ -81,11 +83,17 @@ func NewManager(jwkManager hankoJwk.Manager, config config.Config) (Manager, err
 			Secure:   config.Session.Cookie.Secure,
 		},
 		audience: audience,
+		users:    users,
 	}, nil
 }
 
 // GenerateJWT creates a new session JWT for the given user
 func (m *manager) GenerateJWT(userId uuid.UUID) (string, error) {
+	u, err := m.users.Get(userId)
+	if err != nil {
+		return "", err
+	}
+
 	issuedAt := time.Now()
 	expiration := issuedAt.Add(m.sessionLength)
 
@@ -94,6 +102,11 @@ func (m *manager) GenerateJWT(userId uuid.UUID) (string, error) {
 	_ = token.Set(jwt.IssuedAtKey, issuedAt)
 	_ = token.Set(jwt.ExpirationKey, expiration)
 	_ = token.Set(jwt.AudienceKey, m.audience)
+	// Rback Claims
+
+	_ = token.Set("role", u.Role)
+	_ = token.Set("allowed-roles", []string{u.Role})
+
 	if m.issuer != "" {
 		_ = token.Set(jwt.IssuerKey, m.issuer)
 	}

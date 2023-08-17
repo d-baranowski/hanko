@@ -3,6 +3,10 @@ package config
 import (
 	"errors"
 	"fmt"
+	"log"
+	"strings"
+	"time"
+
 	"github.com/fatih/structs"
 	"github.com/gobwas/glob"
 	"github.com/kelseyhightower/envconfig"
@@ -10,9 +14,6 @@ import (
 	"github.com/knadh/koanf/parsers/yaml"
 	"github.com/knadh/koanf/providers/file"
 	"golang.org/x/exp/slices"
-	"log"
-	"strings"
-	"time"
 )
 
 // Config is the central configuration type
@@ -629,6 +630,7 @@ type LoggerConfig struct {
 
 type Account struct {
 	// Allow Deletion indicates if a user can perform self-service deletion
-	AllowDeletion bool `yaml:"allow_deletion" json:"allow_deletion,omitempty" koanf:"allow_deletion" jsonschema:"default=false"`
-	AllowSignup   bool `yaml:"allow_signup" json:"allow_signup,omitempty" koanf:"allow_signup" jsonschema:"default=true"`
+	AllowDeletion bool   `yaml:"allow_deletion" json:"allow_deletion,omitempty" koanf:"allow_deletion" jsonschema:"default=false"`
+	AllowSignup   bool   `yaml:"allow_signup" json:"allow_signup,omitempty" koanf:"allow_signup" jsonschema:"default=true"`
+	DefaultRole   string `yaml:"default_role" json:"default_role" koanf:"default_role" jsonschema:"default=user"`
 }

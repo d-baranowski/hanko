@@ -55,6 +55,7 @@ func (h *UserHandler) Create(c echo.Context) error {
 
 	return h.persister.Transaction(func(tx *pop.Connection) error {
 		newUser := models.NewUser()
+		newUser.Role = h.cfg.Account.DefaultRole
 		err := h.persister.GetUserPersisterWithConnection(tx).Create(newUser)
 		if err != nil {
 			return fmt.Errorf("failed to store user: %w", err)

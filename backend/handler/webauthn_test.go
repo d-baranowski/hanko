@@ -322,7 +322,7 @@ func (s *webauthnSuite) TestWebauthnHandler_FinalizeAuthentication_TokenInHeader
 func (s *webauthnSuite) GetDefaultSessionManager() session.Manager {
 	jwkManager, err := jwk.NewDefaultManager(test.DefaultConfig.Secrets.Keys, s.Storage.GetJwkPersister())
 	s.Require().NoError(err)
-	sessionManager, err := session.NewManager(jwkManager, test.DefaultConfig)
+	sessionManager, err := session.NewManager(jwkManager, test.DefaultConfig, s.Storage.GetUserPersister())
 	s.Require().NoError(err)
 
 	return sessionManager
