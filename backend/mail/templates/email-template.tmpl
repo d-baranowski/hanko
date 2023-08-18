@@ -1,62 +1,66 @@
 {{define "galenLoginTextMail"}}
-&lt;!DOCTYPE html&gt;
-&lt;html&gt;
-  &lt;head&gt;
-    &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
-    &lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=UTF-8&quot; /&gt;
-  &lt;/head&gt;
-  &lt;body
-    style=&quot;
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
+    <meta
+      http-equiv="Content-Type"
+      content="text/html; charset=UTF-8"
+    />
+  </head>
+  <body
+    style="
       background-color: #f6f6f6;
       font-family: sans-serif;
       font-size: 14px;
       line-height: 1.4;
       margin: 0;
       padding: 0;
-    &quot;
-  &gt;
-    &lt;div style=&quot;display: flex; justify-content: center; padding-top: 10px&quot;&gt;
-      &lt;a
-        target=&quot;_blank&quot;
-        href=&quot;https://benhviendienchau.vn/&quot;
-        style=&quot;
+    "
+  >
+    <div style="display: flex; justify-content: center; padding-top: 10px">
+      <a
+        target="_blank"
+        href="https://benhviendienchau.vn/"
+        style="
           mso-line-height-rule: exactly;
           text-decoration: underline;
           color: #2d3142;
           font-size: 18px;
-        &quot;
-        &gt;&lt;img
-          src=&quot;https://xjpefg.stripocdn.email/content/guids/CABINET_c743a9aa3767648db6e3f69fcf05020a660659bca35e182081931caed70b8c9f/images/logo.png&quot;
-          alt=&quot;Confirmation email&quot;
-          style=&quot;
+        "
+        ><img
+          src="https://xjpefg.stripocdn.email/content/guids/CABINET_c743a9aa3767648db6e3f69fcf05020a660659bca35e182081931caed70b8c9f/images/logo.png"
+          alt="Confirmation email"
+          style="
             display: block;
             font-size: 18px;
             border: 0;
             outline: none;
             text-decoration: none;
             border-radius: 50px;
-          &quot;
-          width=&quot;100&quot;
-          title=&quot;Confirm email&quot;
-      /&gt;&lt;/a&gt;
-    &lt;/div&gt;
-&lt;div style=&quot;display: flex; justify-content: center; margin-top: 10px;&quot;&gt;
-    &lt;div style=&quot;padding: 20px; background-color: white; border-radius: 5px&quot;&gt;
-      &lt;p&gt;Ch&agrave;o mừng,&lt;/p&gt;
-      &lt;p&gt;Vui l&ograve;ng t&igrave;m m&atilde; truy cập sử dụng một lần của bạn b&ecirc;n dưới:&lt;/p&gt;
-      &lt;b&gt;{{ .Code }}&lt;/b&gt;
-      &lt;p&gt;{{t "ttl_text" .}}&lt;/p&gt;
-      &lt;p&gt;Cảm ơn bạn đ&atilde; sử dụng Galen.&lt;/p&gt;
-      &lt;div class=&quot;footer&quot;&gt;
-        &lt;p&gt;
-          Powered by
-          &lt;a href=&quot;https://www.inspiration-particle.com/&quot;
-            &gt;Inspiration Particle&lt;/a
-          &gt;
-        &lt;/p&gt;
-      &lt;/div&gt;
-    &lt;/div&gt;
-&lt;/div&gt;
-  &lt;/body&gt;
-&lt;/html&gt;
+          "
+          width="100"
+          title="Confirm email"
+      /></a>
+    </div>
+    <div style="display: flex; justify-content: center; margin-top: 10px">
+      <div style="padding: 20px; background-color: white; border-radius: 5px">
+        <p>Chào mừng,</p>
+        <p>Vui lòng tìm mã truy cập sử dụng một lần của bạn bên dưới:</p>
+        <b>{{ .Code }}</b>
+        <p>{{t "ttl_text" .}}</p>
+        <p>Cảm ơn bạn đã sử dụng Galen.</p>
+        <div class="footer">
+          <p>
+            Powered by
+            <a href="https://www.inspiration-particle.com/">Inspiration Particle</a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
 {{end}}

@@ -7,8 +7,8 @@ import (
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"golang.org/x/text/language"
 	"gopkg.in/yaml.v3"
+	"html/template"
 	"strings"
-	"text/template"
 )
 
 //go:embed templates/* locales/*
@@ -63,8 +63,6 @@ func (r *Renderer) Render(templateName string, lang string, data map[string]inte
 	if err != nil {
 		return "", fmt.Errorf("failed to fill template with data: %w", err)
 	}
-	fmt.Println(templateBuffer.String())
-	fmt.Println(strings.TrimSpace(templateBuffer.String()))
 	return strings.TrimSpace(templateBuffer.String()), nil
 }
 
