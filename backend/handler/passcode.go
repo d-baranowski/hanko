@@ -1,6 +1,7 @@
 package handler
 
 import (
+	_ "embed"
 	"errors"
 	"fmt"
 	"github.com/gobuffalo/pop/v6"
@@ -19,9 +20,13 @@ import (
 	"github.com/teamhanko/hanko/backend/session"
 	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/gomail.v2"
+	"io"
 	"net/http"
 	"time"
 )
+
+//go:embed embeds/logo.png
+var logo []byte
 
 type PasscodeHandler struct {
 	mailer            mail.Mailer
@@ -196,7 +201,10 @@ func (h *PasscodeHandler) Init(c echo.Context) error {
 	message.SetAddressHeader("From", h.emailConfig.FromAddress, h.emailConfig.FromName)
 
 	message.SetHeader("Subject", h.renderer.Translate(lang, "email_subject_login", data))
-	message.Embed("templates/logo.png")
+	message.Embed("logo.png", gomail.SetCopyFunc(func(w io.Writer) error {
+		_, err := w.Write(logo)
+		return err
+	}))
 	message.SetBody("text/html", str)
 
 	err = h.mailer.Send(message)
