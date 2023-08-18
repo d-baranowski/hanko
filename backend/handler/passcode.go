@@ -196,9 +196,7 @@ func (h *PasscodeHandler) Init(c echo.Context) error {
 	message.SetAddressHeader("From", h.emailConfig.FromAddress, h.emailConfig.FromName)
 
 	message.SetHeader("Subject", h.renderer.Translate(lang, "email_subject_login", data))
-
-	fmt.Println("String at the end of the process")
-	fmt.Println(str)
+	message.Embed("templates/logo.png")
 	message.SetBody("text/html", str)
 
 	err = h.mailer.Send(message)
