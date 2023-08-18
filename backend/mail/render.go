@@ -37,7 +37,7 @@ func NewRenderer() (*Renderer, error) {
 	// add the translate function to the template, so it can be used inside
 	funcMap := template.FuncMap{"t": r.translate}
 	t := template.New("root").Funcs(funcMap)
-	_, err = t.ParseFS(mailFS, "templates/*")
+	_, err = t.ParseFS(mailFS, "templates/*.tmpl")
 	if err != nil {
 		return nil, fmt.Errorf("failed to load templates: %w", err)
 	}
