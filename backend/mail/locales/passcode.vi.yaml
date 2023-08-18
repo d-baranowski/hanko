@@ -1,0 +1,9 @@
+login_text:
+  description: "The sign in content of the text email."
+  other: "Nhập mật khẩu sau trên màn hình đăng nhập của bạn:"
+ttl_text:
+  description: "The length how long the passcode is valid."
+  other: "Mật khẩu có hiệu lực trong {{ .TTL }} phút."
+email_subject_login:
+  description: ""
+  other: "Sử dụng mật mã {{ .Code }} để đăng nhập vào {{ .ServiceName }}"

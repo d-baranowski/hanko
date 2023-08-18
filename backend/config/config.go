@@ -325,8 +325,9 @@ func (s *SMTP) Validate() error {
 }
 
 type Email struct {
-	FromAddress string `yaml:"from_address" json:"from_address,omitempty" koanf:"from_address" split_words:"true" jsonschema:"default=passcode@hanko.io"`
-	FromName    string `yaml:"from_name" json:"from_name,omitempty" koanf:"from_name" split_words:"true" jsonschema:"default=Hanko"`
+	FromAddress       string `yaml:"from_address" json:"from_address,omitempty" koanf:"from_address" split_words:"true" jsonschema:"default=passcode@hanko.io"`
+	FromName          string `yaml:"from_name" json:"from_name,omitempty" koanf:"from_name" split_words:"true" jsonschema:"default=Hanko"`
+	EmailTemplateName string `yaml:"email_template_name" json:"email_template_name" koanf:"email_template_name" jsonschema:"default=loginTextMail"`
 }
 
 func (e *Email) Validate() error {
