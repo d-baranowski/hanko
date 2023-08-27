@@ -1,5 +1,3 @@
-import KeyValueStorageApi from 'src/util/KeyValueStorageApi';
-
 interface AuthTokenPersistanceOptions {
   storageKey: string;
 }
@@ -12,14 +10,16 @@ export class AuthTokenPersistence {
     this.key = options.storageKey;
   }
   getStoredToken(): string {
-    return KeyValueStorageApi.getItem(this.key + "_auth_token-persistence") || ""
+    return (
+      window.localStorage.getItem(this.key + "_auth_token-persistence") || ""
+    );
   }
 
   setStoredToken(token: string, secure = true): void {
-    KeyValueStorageApi.setItem(this.key + "_auth_token-persistence", token)
+    window.localStorage.setItem(this.key + "_auth_token-persistence", token);
   }
 
   removeStoredToken(): void {
-    KeyValueStorageApi.removeItem(this.key + "_auth_token-persistence")
+    window.localStorage.removeItem(this.key + "_auth_token-persistence");
   }
 }
