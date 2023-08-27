@@ -18,8 +18,8 @@ interface SessionStateOptions {
  * @property {Object.<string, LocalStorageSession>} - A dictionary for mapping users to their states.
  */
 export interface LocalStorageSession {
-  expiry: number;
-  userID: string;
+  expiry?: number;
+  userID?: string;
   authFlowCompleted: boolean;
 }
 
@@ -83,7 +83,7 @@ class SessionState extends State {
    * Gets the user id.
    */
   getUserID(): string {
-    return this.getState().userID;
+    return this.getState().userID || "";
   }
 
   /**

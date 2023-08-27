@@ -47,7 +47,7 @@ abstract class State {
 
     try {
       const data = localStorage.getItem(this.key);
-      const decoded = decodeURIComponent(decodeURI(window.atob(data)));
+      const decoded = decodeURIComponent(decodeURI(window.atob(data || "")));
       store = JSON.parse(decoded);
     } catch (e) {
       this.ls = {};

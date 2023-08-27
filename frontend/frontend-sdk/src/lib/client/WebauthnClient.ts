@@ -35,7 +35,7 @@ import { HttpClientOptions } from "./HttpClient";
 class WebauthnClient extends Client {
   webauthnState: WebauthnState;
   passcodeState: PasscodeState;
-  controller: AbortController;
+  controller: AbortController | undefined;
   _getCredential = getWebauthnCredential;
   _createCredential = createWebauthnCredential;
 
@@ -46,12 +46,12 @@ class WebauthnClient extends Client {
      *  @public
      *  @type {WebauthnState}
      */
-    this.webauthnState = new WebauthnState(options.cookieName);
+    this.webauthnState = new WebauthnState(options.localStorageKey);
     /**
      *  @public
      *  @type {PasscodeState}
      */
-    this.passcodeState = new PasscodeState(options.cookieName);
+    this.passcodeState = new PasscodeState(options.localStorageKey);
   }
 
   /**
@@ -95,7 +95,7 @@ class WebauthnClient extends Client {
     try {
       assertion = await this._getCredential(challenge);
     } catch (e) {
-      throw new WebauthnRequestCancelledError(e);
+      throw new WebauthnRequestCancelledError(e as any);
     }
 
     const assertionResponse = await this.client.post(
@@ -156,7 +156,7 @@ class WebauthnClient extends Client {
     try {
       attestation = (await this._createCredential(challenge)) as Attestation;
     } catch (e) {
-      throw new WebauthnRequestCancelledError(e);
+      throw new WebauthnRequestCancelledError(e as any);
     }
 
     // The generated PublicKeyCredentialWithAttestationJSON object does not align with the API. The list of

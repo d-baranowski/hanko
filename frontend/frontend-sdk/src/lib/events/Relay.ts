@@ -9,11 +9,9 @@ import { Session } from "../Session";
  *
  * @category SDK
  * @subcategory Internal
- * @property {string} cookieName - The name of the session cookie set from the SDK.
  * @property {string} localStorageKey - The prefix / name of the local storage keys.
  */
 interface RelayOptions {
-  cookieName: string;
   localStorageKey: string;
 }
 

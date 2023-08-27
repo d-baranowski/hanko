@@ -55,7 +55,7 @@ class PasscodeState extends UserState {
    * @return {string}
    */
   getActiveID(userID: string): string {
-    return this.getState(userID).id;
+    return this.getState(userID).id || "";
   }
 
   /**
@@ -78,7 +78,7 @@ class PasscodeState extends UserState {
    * @return {string}
    */
   getEmailID(userID: string): string {
-    return this.getState(userID).emailID;
+    return this.getState(userID).emailID || "";
   }
 
   /**

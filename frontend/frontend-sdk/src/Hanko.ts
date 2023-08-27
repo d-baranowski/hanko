@@ -15,12 +15,10 @@ import { Session } from "./lib/Session";
  *
  * @interface
  * @property {number=} timeout - The http request timeout in milliseconds. Defaults to 13000ms
- * @property {string=} cookieName - The name of the session cookie set from the SDK. Defaults to "hanko"
  * @property {string=} localStorageKey - The prefix / name of the local storage keys. Defaults to "hanko"
  */
 export interface HankoOptions {
   timeout?: number;
-  cookieName?: string;
   localStorageKey?: string;
 }
 
@@ -49,12 +47,8 @@ class Hanko extends Listener {
     super();
     const opts: InternalOptions = {
       timeout: 13000,
-      cookieName: "hanko",
       localStorageKey: "hanko",
     };
-    if (options?.cookieName !== undefined) {
-      opts.cookieName = options.cookieName;
-    }
     if (options?.timeout !== undefined) {
       opts.timeout = options.timeout;
     }
@@ -119,7 +113,6 @@ class Hanko extends Listener {
 // eslint-disable-next-line require-jsdoc
 export interface InternalOptions {
   timeout: number;
-  cookieName: string;
   localStorageKey: string;
 }
 

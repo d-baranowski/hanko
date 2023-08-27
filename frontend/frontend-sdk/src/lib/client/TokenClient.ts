@@ -26,7 +26,7 @@ export class TokenClient extends Client {
 
     if (!token) return;
 
-    window.history.replaceState(null, null, window.location.pathname);
+    window.history.replaceState(null, "", window.location.pathname);
 
     const response = await this.client.post("/token", { value: token });
     if (!response.ok) {

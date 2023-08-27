@@ -28,12 +28,12 @@ class PasswordClient extends Client {
      *  @public
      *  @type {PasswordState}
      */
-    this.passwordState = new PasswordState(options.cookieName);
+    this.passwordState = new PasswordState(options.localStorageKey);
     /**
      *  @public
      *  @type {PasscodeState}
      */
-    this.passcodeState = new PasscodeState(options.cookieName);
+    this.passcodeState = new PasscodeState(options.localStorageKey);
   }
 
   /**

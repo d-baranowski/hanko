@@ -16,7 +16,9 @@ class WebauthnSupport {
   static supported(): boolean {
     return !!(
       navigator.credentials &&
+      // @ts-ignore
       navigator.credentials.create &&
+      // @ts-ignore
       navigator.credentials.get &&
       window.PublicKeyCredential
     );

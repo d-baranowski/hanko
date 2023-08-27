@@ -42,7 +42,7 @@ export class Throttle {
     const { leading = true, trailing = true } = options;
     let context: any;
     let args: any;
-    let timeoutID: number;
+    let timeoutID: number | null;
     let previous = 0;
 
     // This function is used to invoke the original function.
@@ -68,6 +68,7 @@ export class Throttle {
 
       // Save the context and arguments of the function call.
       // eslint-disable-next-line no-invalid-this
+      // @ts-ignore
       context = this;
       args = funcArgs;
 

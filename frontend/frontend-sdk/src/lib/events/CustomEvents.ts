@@ -37,6 +37,8 @@ export const userDeletedType: "hanko-user-deleted" = "hanko-user-deleted";
 export const authFlowCompletedType: "hanko-auth-flow-completed" =
   "hanko-auth-flow-completed";
 
+export type DecodedToken = { exp: number };
+
 /**
  * The data passed in the `hanko-session-created` or `hanko-session-resumed` event.
  *
@@ -48,7 +50,8 @@ export const authFlowCompletedType: "hanko-auth-flow-completed" =
  * @property {string} userID - The user associated with the session.
  */
 export interface SessionDetail {
-  jwt?: string;
+  jwt: string | null;
+  decodedJwt: DecodedToken | null; 
   expirationSeconds: number;
   userID: string;
 }

@@ -56,7 +56,8 @@ class UserClient extends Client {
 
     if (response.status === 409) {
       throw new ConflictError();
-    } if (response.status === 403) {
+    }
+    if (response.status === 403) {
       throw new ForbiddenError();
     } else if (!response.ok) {
       throw new TechnicalError();
@@ -103,7 +104,7 @@ class UserClient extends Client {
   }
 
   /**
-   * Deletes the current user and expires the existing session cookie.
+   * Deletes the current user and expires the existing session.
    *
    * @return {Promise<void>}
    * @throws {RequestTimeoutError}
@@ -114,7 +115,7 @@ class UserClient extends Client {
     const response = await this.client.delete("/user");
 
     if (response.ok) {
-      this.client.cookie.removeAuthCookie();
+      this.client.authToken.removeStoredToken();
       this.client.sessionState.reset().write();
       this.client.dispatcher.dispatchUserDeletedEvent();
       return;
@@ -127,27 +128,47 @@ class UserClient extends Client {
   }
 
   /**
-   * Logs out the current user and expires the existing session cookie. A valid session cookie is required to call the logout endpoint.
+   * Logs out the current user and expires the existing session. A valid session is required to call the logout endpoint.
    *
    * @return {Promise<void>}
    * @throws {RequestTimeoutError}
    * @throws {TechnicalError}
    */
   async logout(): Promise<void> {
-    const logoutResponse = await this.client.post("/logout");
+    const bearerToken = this.client.authToken.getStoredToken();
 
-    // For cross-domain operations, the frontend SDK creates the cookie by reading the "X-Auth-Token" header, and
-    // "Set-Cookie" headers sent by the backend have no effect due to the browser's security policy, which means that
-    // the cookie must also be removed client-side in that case.
-    this.client.cookie.removeAuthCookie();
-    this.client.sessionState.reset().write();
-    this.client.dispatcher.dispatchUserLoggedOutEvent();
-
-    if (logoutResponse.status === 401) {
-      // The user is logged out already
+    if (!bearerToken) {
       return;
-    } else if (!logoutResponse.ok) {
-      throw new TechnicalError();
+    } else {
+      return fetch(this.client.api + "/logout", {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${bearerToken}`,
+        },
+      })
+        .then((logoutResponse) => {
+          // For cross-domain operations, the frontend SDK creates the cookie by reading the "X-Auth-Token" header, and
+          // "Set-Cookie" headers sent by the backend have no effect due to the browser's security policy, which means that
+          // the cookie must also be removed client-side in that case.
+          this.client.authToken.removeStoredToken();
+          this.client.sessionState.reset().write();
+          this.client.dispatcher.dispatchUserLoggedOutEvent();
+
+          if (logoutResponse.status === 401) {
+            // The user is logged out already
+            return;
+          } else if (!logoutResponse.ok) {
+            throw new TechnicalError();
+          }
+        })
+        .catch((error) => {
+          this.client.authToken.removeStoredToken();
+          this.client.sessionState.reset().write();
+          this.client.dispatcher.dispatchUserLoggedOutEvent();
+          throw error;
+        });
     }
   }
 }

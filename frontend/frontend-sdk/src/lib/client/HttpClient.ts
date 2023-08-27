@@ -2,7 +2,9 @@ import { RequestTimeoutError, TechnicalError } from "../Errors";
 import { SessionState } from "../state/session/SessionState";
 import { PasscodeState } from "../state/users/PasscodeState";
 import { Dispatcher } from "../events/Dispatcher";
-import { Cookie } from "../Cookie";
+import { AuthTokenPersistence } from "../AuthTokenPersistence";
+import jwtDecode from "jwt-decode";
+import { DecodedToken } from "../events/CustomEvents";
 
 /**
  * This class wraps an XMLHttpRequest to maintain compatibility with the fetch API.
@@ -102,7 +104,7 @@ class Response {
    * @return {number}
    */
   parseNumericHeader(name: string): number {
-    const result = parseInt(this.headers.getResponseHeader(name), 10);
+    const result = parseInt(this.headers.getResponseHeader(name) || "", 10);
     return isNaN(result) ? 0 : result;
   }
 }
@@ -113,12 +115,10 @@ class Response {
  * @category SDK
  * @subcategory Internal
  * @property {number} timeout - The http request timeout in milliseconds.
- * @property {string} cookieName - The name of the session cookie set from the SDK.
  * @property {string} localStorageKey - The prefix / name of the local storage keys.
  */
 export interface HttpClientOptions {
   timeout: number;
-  cookieName: string;
   localStorageKey: string;
 }
 
@@ -142,45 +142,52 @@ class HttpClient {
   sessionState: SessionState;
   passcodeState: PasscodeState;
   dispatcher: Dispatcher;
-  cookie: Cookie;
+  authToken: AuthTokenPersistence;
 
   // eslint-disable-next-line require-jsdoc
   constructor(api: string, options: HttpClientOptions) {
     this.api = api;
     this.timeout = options.timeout;
     this.sessionState = new SessionState({ ...options });
-    this.passcodeState = new PasscodeState(options.cookieName);
+    this.passcodeState = new PasscodeState(options.localStorageKey);
     this.dispatcher = new Dispatcher({ ...options });
-    this.cookie = new Cookie({ ...options });
+    this.authToken = new AuthTokenPersistence({ storageKey: options.localStorageKey });
   }
 
   // eslint-disable-next-line require-jsdoc
   _fetch(path: string, options: RequestInit, xhr = new XMLHttpRequest()) {
     const url = this.api + path;
     const timeout = this.timeout;
-    const bearerToken = this.cookie.getAuthCookie();
+    const bearerToken = this.authToken.getStoredToken();
 
+    console.log("url ", url, "method", options.method)
     return new Promise<Response>(function (resolve, reject) {
-      xhr.open(options.method, url, true);
+      xhr.open(options.method || "", url, true);
       xhr.setRequestHeader("Accept", "application/json");
       xhr.setRequestHeader("Content-Type", "application/json");
 
       if (bearerToken) {
         xhr.setRequestHeader("Authorization", `Bearer ${bearerToken}`);
+      } else {
+        console.log("bearer token header is not present")
       }
 
       xhr.timeout = timeout;
       xhr.withCredentials = true;
+      console.log("hanko http client ", { url, timeout, bearerToken, options, xhr })
       xhr.onload = () => {
         const response = new Response(xhr);
+        console.log("hanko http client response", { response })
         resolve(response);
       };
 
-      xhr.onerror = () => {
-        reject(new TechnicalError());
+      xhr.onerror = (event) => {
+        console.error("hanko http client error", { event })
+        reject(event);
       };
 
       xhr.ontimeout = () => {
+        console.error("hanko client time out")
         reject(new RequestTimeoutError());
       };
 
@@ -205,10 +212,10 @@ class HttpClient {
       .forEach((h) => {
         const header = h.toLowerCase();
         if (header.startsWith("x-auth-token")) {
-          jwt = response.headers.getResponseHeader("X-Auth-Token");
+          jwt = response.headers.getResponseHeader("X-Auth-Token") || "";
         } else if (header.startsWith("x-session-lifetime")) {
           expirationSeconds = parseInt(
-            response.headers.getResponseHeader("X-Session-Lifetime"),
+            response.headers.getResponseHeader("X-Session-Lifetime") || "",
             10
           );
         }
@@ -216,7 +223,8 @@ class HttpClient {
 
     if (jwt) {
       const secure = !!this.api.match("^https://");
-      this.cookie.setAuthCookie(jwt, secure);
+      console.log("persisting the jwt", jwt, secure)
+      this.authToken.setStoredToken(jwt, secure);
     }
 
     this.passcodeState.read().reset(userID).write();
@@ -227,10 +235,13 @@ class HttpClient {
       this.sessionState.setUserID(userID);
       this.sessionState.setAuthFlowCompleted(false);
       this.sessionState.write();
+      const decoded = jwt ? jwtDecode(jwt) : null
+
       this.dispatcher.dispatchSessionCreatedEvent({
         jwt,
         userID,
         expirationSeconds,
+        decodedJwt: decoded as DecodedToken
       });
     }
   }

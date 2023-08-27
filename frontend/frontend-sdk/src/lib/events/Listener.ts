@@ -117,7 +117,9 @@ export class Listener {
     throttle = false,
   }: EventListenerWithTypeParams<T>): CleanupFunc {
     const wrappedCallback = this.wrapCallback(callback, throttle);
+    // @ts-ignore
     this._addEventListener(type, wrappedCallback, { once });
+    // @ts-ignore
     return () => this._removeEventListener(type, wrappedCallback);
   }
 

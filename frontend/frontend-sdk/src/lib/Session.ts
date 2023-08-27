@@ -1,17 +1,16 @@
-import { SessionDetail } from "./events/CustomEvents";
+import { DecodedToken, SessionDetail } from "./events/CustomEvents";
 import { SessionState } from "./state/session/SessionState";
-import { Cookie } from "./Cookie";
+import { AuthTokenPersistence } from "./AuthTokenPersistence";
+import jwtDecode from "jwt-decode";
 
 /**
  * Options for Session
  *
  * @category SDK
  * @subcategory Internal
- * @property {string} cookieName - The name of the session cookie set from the SDK.
  * @property {string} localStorageKey - The prefix / name of the local storage keys.
  */
 interface SessionOptions {
-  cookieName: string;
   localStorageKey: string;
 }
 
@@ -24,22 +23,12 @@ interface SessionOptions {
  */
 export class Session {
   _sessionState: SessionState;
-  _cookie: Cookie;
+  jwt: AuthTokenPersistence;
 
   // eslint-disable-next-line require-jsdoc
   constructor(options: SessionOptions) {
     this._sessionState = new SessionState({ ...options });
-    this._cookie = new Cookie({ ...options });
-  }
-
-  /**
-   Retrieves the session details.
-
-   @returns {SessionDetail} The session details.
-   */
-  public get(): SessionDetail {
-    const detail = this._get();
-    return Session.validate(detail) ? detail : null;
+    this.jwt = new AuthTokenPersistence({ storageKey: options.localStorageKey });
   }
 
   /**
@@ -48,8 +37,12 @@ export class Session {
    @returns {boolean} true if the user is logged in, false otherwise.
    */
   public isValid(): boolean {
-    const session = this._get();
+    const session = this.get();
     return Session.validate(session);
+  }
+
+  public isLoggedIn(): boolean {
+    return this.isValid()
   }
 
   /**
@@ -58,18 +51,22 @@ export class Session {
    @ignore
    @returns {SessionDetail} The session details.
    */
-  public _get(): SessionDetail {
+  public get(): SessionDetail | null {
     this._sessionState.read();
 
     const userID = this._sessionState.getUserID();
     const expirationSeconds = this._sessionState.getExpirationSeconds();
-    const jwt = this._cookie.getAuthCookie();
+    const storedToken = this.jwt.getStoredToken();
+    const decoded = storedToken ? jwtDecode(storedToken) as DecodedToken : null
 
-    return {
+    const detail = {
       userID,
       expirationSeconds,
-      jwt,
+      jwt: storedToken,
+      decodedJwt: decoded
     };
+
+    return Session.validate(detail) ? detail : null;
   }
 
   /**
@@ -89,7 +86,23 @@ export class Session {
    @param {SessionDetail} detail - The session details to validate.
    @returns {boolean} true if the session details are valid, false otherwise.
    */
-  private static validate(detail: SessionDetail): boolean {
-    return !!(detail.expirationSeconds > 0 && detail.userID?.length);
+  private static validate(detail: SessionDetail | null): boolean {
+    if (!detail) {
+      return false;
+    }
+
+    if (detail.expirationSeconds <= 0) {
+      return false
+    }
+
+    if (!detail.userID?.length) {
+      return false
+    }
+
+    if (!detail.jwt?.length) {
+      return false;
+    }
+      
+    return true
   }
 }

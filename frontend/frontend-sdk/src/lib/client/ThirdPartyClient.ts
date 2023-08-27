@@ -74,7 +74,7 @@ export class ThirdPartyClient extends Client {
           code = "somethingWentWrong";
       }
 
-      return new ThirdPartyError(code, new Error(errorDescription));
+      return new ThirdPartyError(code, new Error(errorDescription || error || ""));
     }
   }
 }
