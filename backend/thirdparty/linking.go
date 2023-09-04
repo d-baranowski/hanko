@@ -24,7 +24,7 @@ func LinkAccount(tx *pop.Connection, cfg *config.Config, p persistence.Persister
 	}
 
 	if identity == nil {
-		return signUp(tx, p, userData, providerName)
+		return signUp(tx, cfg, p, userData, providerName)
 	} else {
 		return signIn(tx, cfg, p, userData, identity)
 	}
@@ -110,7 +110,7 @@ func signIn(tx *pop.Connection, cfg *config.Config, p persistence.Persister, use
 	return linkingResult, nil
 }
 
-func signUp(tx *pop.Connection, p persistence.Persister, userData *UserData, providerName string) (*AccountLinkingResult, error) {
+func signUp(tx *pop.Connection, cfg *config.Config, p persistence.Persister, userData *UserData, providerName string) (*AccountLinkingResult, error) {
 	var linkingResult *AccountLinkingResult
 
 	userPersister := p.GetUserPersisterWithConnection(tx)
@@ -128,6 +128,7 @@ func signUp(tx *pop.Connection, p persistence.Persister, userData *UserData, pro
 	}
 
 	user := models.NewUser()
+	user.Role = cfg.Account.DefaultRole
 	terr = userPersister.Create(user)
 	if terr != nil {
 		return nil, ErrorServer("could not create user").WithCause(terr)
