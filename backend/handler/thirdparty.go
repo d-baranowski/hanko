@@ -38,48 +38,42 @@ func NewThirdPartyHandler(cfg *config.Config, persister persistence.Persister, s
 }
 
 func (h *ThirdPartyHandler) Auth(c echo.Context) error {
-	errorRedirectTo := c.Request().Header.Get("Referer")
-	if errorRedirectTo == "" {
-		errorRedirectTo = h.cfg.ThirdParty.ErrorRedirectURL
+	returnTo := c.Request().Header.Get("Referer")
+	if returnTo == "" {
+		returnTo = h.cfg.ThirdParty.ErrorRedirectURL
 	}
 
 	var request dto.ThirdPartyAuthRequest
 	err := c.Bind(&request)
 	if err != nil {
-		return h.redirectError(c, thirdparty.ErrorServer("could not decode request payload").WithCause(err), errorRedirectTo)
+		return h.redirectError(c, thirdparty.ErrorServer("could not decode request payload").WithCause(err), returnTo)
 	}
 
 	err = c.Validate(request)
 	if err != nil {
-		return h.redirectError(c, thirdparty.ErrorInvalidRequest(err.Error()).WithCause(err), errorRedirectTo)
+		return h.redirectError(c, thirdparty.ErrorInvalidRequest(err.Error()).WithCause(err), returnTo)
 	}
 
 	if ok := thirdparty.IsAllowedRedirect(h.cfg.ThirdParty, request.RedirectTo); !ok {
-		return h.redirectError(c, thirdparty.ErrorInvalidRequest(fmt.Sprintf("redirect to '%s' not allowed", request.RedirectTo)), errorRedirectTo)
+		return h.redirectError(c, thirdparty.ErrorInvalidRequest(fmt.Sprintf("redirect to '%s' not allowed", request.RedirectTo)), returnTo)
 	}
 
 	provider, err := thirdparty.GetProvider(h.cfg.ThirdParty, request.Provider)
 	if err != nil {
-		return h.redirectError(c, thirdparty.ErrorInvalidRequest(err.Error()).WithCause(err), errorRedirectTo)
+		return h.redirectError(c, thirdparty.ErrorInvalidRequest(err.Error()).WithCause(err), returnTo)
 	}
 
 	state, err := thirdparty.GenerateState(h.cfg, provider.Name(), request.RedirectTo)
 	if err != nil {
-		return h.redirectError(c, thirdparty.ErrorServer("could not generate state").WithCause(err), errorRedirectTo)
+		return h.redirectError(c, thirdparty.ErrorServer("could not generate state").WithCause(err), returnTo)
 	}
 
 	authCodeUrl := provider.AuthCodeURL(string(state), oauth2.SetAuthURLParam("prompt", "consent"))
 
-	c.SetCookie(&http.Cookie{
-		Name:     HankoThirdpartyStateCookie,
-		Value:    string(state),
-		Path:     "/",
-		Domain:   h.cfg.Session.Cookie.Domain,
-		MaxAge:   300,
-		Secure:   h.cfg.Session.Cookie.Secure,
-		HttpOnly: h.cfg.Session.Cookie.HttpOnly,
-		SameSite: http.SameSiteLaxMode,
-	})
+	err = h.persister.GetOauthStatePersister().Create(string(state))
+	if err != nil {
+		return h.redirectError(c, thirdparty.ErrorServer("could not persist state").WithCause(err), returnTo)
+	}
 
 	return c.Redirect(http.StatusTemporaryRedirect, authCodeUrl)
 }
@@ -115,12 +109,13 @@ func (h *ThirdPartyHandler) Callback(c echo.Context) error {
 			}
 		}
 
-		expectedState, terr := c.Cookie(HankoThirdpartyStateCookie)
+		expectedState, terr := h.persister.GetOauthStatePersister().Get(callback.State)
+		_ = h.persister.GetOauthStatePersister().Delete(callback.State)
 		if terr != nil {
-			return thirdparty.ErrorInvalidRequest("thirdparty state cookie is missing")
+			return thirdparty.ErrorInvalidRequest(terr.Error()).WithCause(terr)
 		}
 
-		state, terr := thirdparty.VerifyState(h.cfg, callback.State, expectedState.Value)
+		state, terr := thirdparty.VerifyState(h.cfg, callback.State, expectedState.State)
 		if terr != nil {
 			return thirdparty.ErrorInvalidRequest(terr.Error()).WithCause(terr)
 		}

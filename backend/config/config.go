@@ -577,6 +577,7 @@ type ThirdPartyProviders struct {
 	Google ThirdPartyProvider `yaml:"google" json:"google,omitempty" koanf:"google"`
 	GitHub ThirdPartyProvider `yaml:"github" json:"github,omitempty" koanf:"github"`
 	Apple  ThirdPartyProvider `yaml:"apple" json:"apple,omitempty" koanf:"apple"`
+	Zalo   ThirdPartyProvider `yaml:"zalo" json:"zalo:omitempty" koanf:"zalo"`
 }
 
 func (p *ThirdPartyProviders) Validate() error {

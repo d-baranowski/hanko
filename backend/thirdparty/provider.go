@@ -85,6 +85,8 @@ func GetProvider(config config.ThirdParty, name string) (OAuthProvider, error) {
 		return NewGithubProvider(config.Providers.GitHub, config.RedirectURL)
 	case "apple":
 		return NewAppleProvider(config.Providers.Apple, config.RedirectURL)
+	case "zalo":
+		return NewZaloProvider(config.Providers.Zalo, config.RedirectURL)
 	default:
 		return nil, fmt.Errorf("provider '%s' is not supported", name)
 	}

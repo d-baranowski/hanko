@@ -39,6 +39,8 @@ type Persister interface {
 	GetPrimaryEmailPersisterWithConnection(tx *pop.Connection) PrimaryEmailPersister
 	GetTokenPersister() TokenPersister
 	GetTokenPersisterWithConnection(tx *pop.Connection) TokenPersister
+	GetOauthStatePersister() OauthStatePersister
+	GetOauthStatePersisterWithConnection(tx *pop.Connection) OauthStatePersister
 }
 
 type Migrator interface {
@@ -203,4 +205,12 @@ func (p *persister) GetTokenPersister() TokenPersister {
 
 func (p *persister) GetTokenPersisterWithConnection(tx *pop.Connection) TokenPersister {
 	return NewTokenPersister(tx)
+}
+
+func (p *persister) GetOauthStatePersister() OauthStatePersister {
+	return NewOauthStatePersister(p.DB)
+}
+
+func (p *persister) GetOauthStatePersisterWithConnection(tx *pop.Connection) OauthStatePersister {
+	return NewOauthStatePersister(tx)
 }
